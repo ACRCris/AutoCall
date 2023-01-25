@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loadScreenFragment">
+
+    <fragment
+        android:id="@+id/loadScreenFragment"
+        android:name="com.movistar.autocall.view.LoadScreenFragment"
+        android:label="fragment_load_screen"
+        tools:layout="@layout/fragment_load_screen" >
+        <action
+            android:id="@+id/action_loadScreenFragment_to_callerScreenFragment"
+            app:destination="@id/callerScreenFragment" />
+        <action
+            android:id="@+id/action_loadScreenFragment_to_errorsScreenFragment"
+            app:destination="@id/errorsScreenFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/callerScreenFragment"
+        android:name="com.movistar.autocall.view.CallerScreenFragment"
+        android:label="fragment_caller_screen"
+        tools:layout="@layout/fragment_caller_screen" />
+    <fragment
+        android:id="@+id/errorsScreenFragment"
+        android:name="com.movistar.autocall.view.ErrorsScreenFragment"
+        android:label="fragment_errors_screen"
+        tools:layout="@layout/fragment_errors_screen" />
+</navigation>
