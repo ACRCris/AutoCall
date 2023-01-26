@@ -63,7 +63,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
     }
 
     public void requestRole(Context context) {
-        String[] permissions = new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE};
+        String[] permissions = new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE, Manifest.permission.MODIFY_PHONE_STATE};
         requestPermissionLauncher.launch(permissions);
 
     }
