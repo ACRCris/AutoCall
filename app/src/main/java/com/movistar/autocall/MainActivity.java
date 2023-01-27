@@ -11,9 +11,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.Manifest;
+
+import com.hover.sdk.api.Hover;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,21 +26,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // btn = findViewById(R.id.button2);
-/*
-        String phoneNumber = "tel:" + "+57 3059337080";
-        Intent dial = new Intent(Intent.ACTION_CALL, Uri.parse(phoneNumber));
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            permissionRequest.launch(android.Manifest.permission.CALL_PHONE);
-        }
 
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callLauncher.launch(dial);
 
-            }
-        });*/
+        Hover.initialize(this);
+
+
+
+
+
+
 
     }
 

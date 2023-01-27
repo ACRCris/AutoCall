@@ -93,8 +93,11 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
 // choose the SIM card you want to use
         assert phoneAccounts != null;
-         sim1 = phoneAccounts.get(0);
+         sim1 = phoneAccounts.get(1);
+
         PhoneAccountHandle sim2 = phoneAccounts.get(1);
+        Log.d("CallScreenViewModel", "instanceCall: " + sim1);
+        Log.d("CallScreenViewModel", "instanceCall: " + sim2);
 
 
     }
@@ -124,29 +127,33 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void getRequest(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
-
+        Log.i("CallScreenViewModel", "netwotk: " + telephonyManager.getNetworkOperatorName());
         telephonyManager.sendUssdRequest(mmi, new TelephonyManager.UssdResponseCallback() {
             @Override
             public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
                 // Handle USSD response
-                Log.i("CallScreenViewModel", "onReceiveUssdResponse: " + response+" "+request);
+                Log.i("Call2ScreenViewModel", "onReceiveUssdResponse: " + response+" "+request);
+                //getMakeCall().postValue(true);
             }
 
             @Override
             public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
                 switch (failureCode) {
                     case TelephonyManager.USSD_RETURN_FAILURE:
-                        Log.e("Call Error", "USSD request failed " + request);
+                        Log.e("Call2 Error", "USSD request failed " + request);
                         break;
                     case TelephonyManager.USSD_ERROR_SERVICE_UNAVAIL:
-                        Log.e("Call Error", "Service is not available" + request);
+                        Log.e("Call2 Error", "Service is not available" + request);
                         break;
                     default:
-                        Log.e("Call Error", "Unknown error " + request);
+                        Log.e("Call2 Error", "Unknown error " + request);
                         break;
                 }
+                //getMakeCall().postValue(true);
+
             }
         }, null);
     }
+
 
 }

@@ -43,6 +43,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.hover.sdk.actions.HoverAction;
+import com.hover.sdk.api.Hover;
+import com.hover.sdk.api.HoverParameters;
 import com.movistar.autocall.CallReceiver;
 import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentCallerScreenBinding;
@@ -141,10 +144,11 @@ public class CallerScreenFragment extends Fragment {
 
     private FragmentCallerScreenBinding binding;
     private CallScreenViewModel mRequest;
-    private List<String> numbers = new ArrayList<>(Arrays.asList(
-            "*255*4#",
+    private List<String> numbers = new ArrayList<>(Arrays.asList("*454#"));
+            /*"*255*4#",
             "*10#",
             "*111#"));
+            "*133#",
             /*"*454*3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230123*1#",
             "*454*3*3*4*636014*3*3259719171*19790130*clavijo*3176794414*1*3006250363*19171*20230123*1#",
             "*454*3*3*4*636014*3*3259722404*19790130*cubillos*3176794197*1*3132943168*22404*20230123*1#",
@@ -175,7 +179,7 @@ public class CallerScreenFragment extends Fragment {
             "*454*3*3*4*636014*3*3259717278*19810605*GUEVARA*3176744882*1*3133124970*17278*20230123*1#",
             "*454*3*3*4*636014*3*3259717373*19810605*PINILLOS*3185444487*1*3223973968*17373*20230123*1#",
             "*454*3*3*4*636014*3*3259719404*19810605*OVALLE*3176236325*1*3222521327*19404*20230123*1#",
-            "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230123*1#"));*/
+            "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230123*1#"));*/   
     int cont = 0;
     private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
         @Override
@@ -207,9 +211,11 @@ public class CallerScreenFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+       boolean isPresent = Hover.isActionSimPresent("cd16b7af", requireActivity());
+        Log.i("isPresent", String.valueOf(isPresent));
+        Log.i("sim0", Hover.getPresentSims(requireActivity()).get(0).getOperatorName());
+        //.i("sim1", Hover.getPresentSims(requireActivity()).get(1).getOperatorName());
 
-        IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
-        requireActivity().getApplication().registerReceiver(smsReceiver, filter);
 
 
 
@@ -230,12 +236,13 @@ public class CallerScreenFragment extends Fragment {
 
     }
 
-    private ActivityResultLauncher<Intent> callLauncher = registerForActivityResult(
+    private ActivityResultLauncher<Intent> sendUssd = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     Log.i("holallala", "" + result.getResultCode());
                 }
+                Log.i("holallala", "" + result.getResultCode());
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     // There are no request codes
                     Intent data = result.getData();
@@ -256,27 +263,31 @@ public class CallerScreenFragment extends Fragment {
 
         Button button = requireView().findViewById(R.id.call_button);
 
+        Intent i = new HoverParameters.Builder(requireActivity())
+                .request("cd16b7af")
+                .extra("apellido", "3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230123*1#") // Only if your action has variables
+                .buildIntent();
+
 
         final Observer<Boolean> makeCallObserver = makeCall -> {
 
             if (makeCall) {
                 if (!numbers.isEmpty()) {
                     synchronized (this){
-
-
-                        mRequest.setMMI(numbers.get(0));
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            mRequest.getRequest(requireActivity());
-                        }
-                        mRequest.makeCall(requireActivity());
-                        Log.i("numerororor", "numoermo " + numbers.get(0));
-                        numbers.remove(0);
                         try {
                             wait(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        mRequest.getMakeCall().setValue(false);
+
+                        mRequest.setMMI(numbers.get(0));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            mRequest.getRequest(requireActivity());
+                        }
+                        Log.i("numerororor", "numoermo " + numbers.get(0));
+                        //numbers.remove(0);
+                        sendUssd.launch(i);
+
                     }
 
 
@@ -289,11 +300,10 @@ public class CallerScreenFragment extends Fragment {
                         e.printStackTrace();
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        Log.i("CallScreenViewModel", "makeCall: " +mRequest.getTelecomManager().isInCall() + cont);
+                        Log.i("Call2ScreenViewModel", "makeCall: " +mRequest.getTelecomManager().isInCall() + cont);
                         cont++;
                     }
 
-                    mRequest.getMakeCall().setValue(!mRequest.getTelecomManager().isInCall());
 
                 }
             }
