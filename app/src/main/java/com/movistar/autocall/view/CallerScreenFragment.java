@@ -1,8 +1,5 @@
 package com.movistar.autocall.view;
 
-import static android.content.Context.TELEPHONY_SERVICE;
-
-import android.Manifest;
 import android.annotation.SuppressLint;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -12,8 +9,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -23,19 +18,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.telecom.Call;
-import android.telecom.PhoneAccountHandle;
-import android.telecom.TelecomManager;
-import android.telephony.DisconnectCause;
-import android.telephony.PhoneStateListener;
-import android.telephony.SmsMessage;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -43,20 +29,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.hover.sdk.actions.HoverAction;
+import com.movistar.autocall.CallReceiver;
+import com.movistar.autocall.viewmodel.CallScreenViewModel;
+import com.movistar.autocall.viewmodel.TransactionReceiver;
 import com.hover.sdk.api.Hover;
 import com.hover.sdk.api.HoverParameters;
-import com.movistar.autocall.CallReceiver;
 import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentCallerScreenBinding;
-import com.movistar.autocall.viewmodel.CallScreenViewModel;
-import com.movistar.autocall.viewmodel.LoadScreenViewModel;
-import com.movistar.autocall.viewmodel.TransactionReceiver;
+import com.romellfudi.ussdlibrary.USSDApi;
+import com.romellfudi.ussdlibrary.USSDController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -184,12 +171,37 @@ public class CallerScreenFragment extends Fragment {
             "*454*3*3*4*636014*3*3259719404*19810605*OVALLE*3176236325*1*3222521327*19404*20230123*1#",
             "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230123*1#"));*/   
     int cont = 0;
+    HashMap<String, HashSet<String>> map = new HashMap<>();
 
 
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        map.put("KEY_LOGIN",new HashSet<>(Arrays.asList("espere", "waiting", "loading", "esperando")));
+        map.put("KEY_ERROR",new HashSet<>(Arrays.asList("problema", "problem", "error", "null")));
+        USSDApi ussdApi = USSDController.getInstance(requireActivity());
+
+
+        ussdApi.callUSSDInvoke("*454#", 0, map, new USSDController.CallbackInvoke() {
+
+                    @Override
+                    public void responseInvoke(String message) {
+                        String dataToSend = "3";// <- send "data" into USSD's input text
+                        ussdApi.send(dataToSend,new USSDController.CallbackMessage(){
+                            @Override
+                            public void responseMessage(String message) {
+                                Log.i("RepuestaALA", "responseMessage: "+message);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void over(String message) {
+
+                    }
+                });
 
         BroadcastReceiver transactionReceiver = new TransactionReceiver();
         boolean isPresent = Hover.isActionSimPresent("cd16b7af", requireActivity());
@@ -242,11 +254,17 @@ public class CallerScreenFragment extends Fragment {
             Log.i("recividododo22", "uuid: " + i.getStringExtra("uuid"));
         }
     };
+
+
+
+
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mVisible = true;
 
         mControlsView = binding.fullscreenContentControls;
@@ -254,10 +272,6 @@ public class CallerScreenFragment extends Fragment {
 
         Button button = requireView().findViewById(R.id.call_button);
 
-         i = new HoverParameters.Builder(requireActivity())
-                .request("cd16b7af")
-                .extra("code","3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230130*1")// Only if your action has variables
-                .buildIntent();
 
 
         final Observer<Boolean> makeCallObserver = makeCall -> {
@@ -277,7 +291,7 @@ public class CallerScreenFragment extends Fragment {
                         }
                         Log.i("numerororor", "numoermo " + numbers.get(0));
                         //numbers.remove(0);
-                        callHover();
+                        //callHover();
 
                     }
 
@@ -322,6 +336,8 @@ public class CallerScreenFragment extends Fragment {
         // while interacting with the UI.
         binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
     }
+
+
 
     @Override
     public void onResume() {

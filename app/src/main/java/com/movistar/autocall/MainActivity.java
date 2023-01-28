@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.Manifest;
 
 import com.hover.sdk.api.Hover;
+import com.movistar.autocall.R;
 
 public class MainActivity extends AppCompatActivity {
 

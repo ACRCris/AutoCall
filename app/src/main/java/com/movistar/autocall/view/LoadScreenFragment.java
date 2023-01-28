@@ -21,9 +21,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.movistar.autocall.viewmodel.LoadScreenViewModel;
 import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentLoadScreenBinding;
-import com.movistar.autocall.viewmodel.LoadScreenViewModel;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
