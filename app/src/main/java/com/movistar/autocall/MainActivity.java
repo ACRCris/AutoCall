@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
         // btn = findViewById(R.id.button2);
 
-
-
         Hover.initialize(this);
 
 

@@ -13,8 +13,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -51,6 +53,7 @@ import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentCallerScreenBinding;
 import com.movistar.autocall.viewmodel.CallScreenViewModel;
 import com.movistar.autocall.viewmodel.LoadScreenViewModel;
+import com.movistar.autocall.viewmodel.TransactionReceiver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,12 +147,12 @@ public class CallerScreenFragment extends Fragment {
 
     private FragmentCallerScreenBinding binding;
     private CallScreenViewModel mRequest;
-    private List<String> numbers = new ArrayList<>(Arrays.asList("*454#"));
+    private List<String> numbers = new ArrayList<>(Arrays.asList("*454*00*3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230130*1#"));
             /*"*255*4#",
             "*10#",
             "*111#"));
             "*133#",
-            /*"*454*3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230123*1#",
+            /*"*454*0*3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230123*1#",
             "*454*3*3*4*636014*3*3259719171*19790130*clavijo*3176794414*1*3006250363*19171*20230123*1#",
             "*454*3*3*4*636014*3*3259722404*19790130*cubillos*3176794197*1*3132943168*22404*20230123*1#",
             "*454*3*3*4*636014*3*3259731219*19790130*lozano*3176794006*1*3229478402*31219*20230123*1#",
@@ -181,43 +184,21 @@ public class CallerScreenFragment extends Fragment {
             "*454*3*3*4*636014*3*3259719404*19810605*OVALLE*3176236325*1*3222521327*19404*20230123*1#",
             "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230123*1#"));*/   
     int cont = 0;
-    private BroadcastReceiver smsReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-            Log.i("SMS", "SMS Received");
-            // Get the SMS message
-            Bundle bundle = intent.getExtras();
-            SmsMessage[] msgs = null;
-            String strMessage = "";
-            if (bundle != null) {
-                // Retrieve the SMS message received
-                Object[] pdus = (Object[]) bundle.get("pdus");
-                msgs = new SmsMessage[pdus.length];
-                for (int i = 0; i < msgs.length; i++) {
-                    msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                    // Build the message to show
-                    strMessage += "SMS from " + msgs[i].getOriginatingAddress();
-                    strMessage += " :" + msgs[i].getMessageBody() + "\n";
-                }
-                // Display the message
-                Toast.makeText(context, strMessage, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
 
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       boolean isPresent = Hover.isActionSimPresent("cd16b7af", requireActivity());
+        BroadcastReceiver transactionReceiver = new TransactionReceiver();
+        boolean isPresent = Hover.isActionSimPresent("cd16b7af", requireActivity());
         Log.i("isPresent", String.valueOf(isPresent));
         Log.i("sim0", Hover.getPresentSims(requireActivity()).get(0).getOperatorName());
         //.i("sim1", Hover.getPresentSims(requireActivity()).get(1).getOperatorName());
 
-
-
+        IntentFilter filter = new IntentFilter("com.movistar.autocall.PENDING_TRANSACTION_CREATED");
+        requireActivity().registerReceiver(transactionReceiver, filter);
 
         mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry());
         getLifecycle().addObserver(mRequest);
@@ -249,8 +230,18 @@ public class CallerScreenFragment extends Fragment {
                 }
             });
 
-
-
+    private Intent i;
+    private void callHover() {
+        LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(pendingTransactionReceiver, new IntentFilter("com.movistar.autocall.PENDING_TRANSACTION_CREATED"));
+        sendUssd.launch(i);
+    }
+    private final BroadcastReceiver pendingTransactionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent i) {
+            Log.i("recividododo22", "Recieved pending transaction created broadcast");
+            Log.i("recividododo22", "uuid: " + i.getStringExtra("uuid"));
+        }
+    };
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     @Override
@@ -263,9 +254,9 @@ public class CallerScreenFragment extends Fragment {
 
         Button button = requireView().findViewById(R.id.call_button);
 
-        Intent i = new HoverParameters.Builder(requireActivity())
+         i = new HoverParameters.Builder(requireActivity())
                 .request("cd16b7af")
-                .extra("apellido", "3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230123*1#") // Only if your action has variables
+                .extra("code","3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230130*1")// Only if your action has variables
                 .buildIntent();
 
 
@@ -282,11 +273,11 @@ public class CallerScreenFragment extends Fragment {
 
                         mRequest.setMMI(numbers.get(0));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            mRequest.getRequest(requireActivity());
+                            //mRequest.getRequest(requireActivity());
                         }
                         Log.i("numerororor", "numoermo " + numbers.get(0));
                         //numbers.remove(0);
-                        sendUssd.launch(i);
+                        callHover();
 
                     }
 
