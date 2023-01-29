@@ -21,7 +21,8 @@
         android:id="@+id/callerScreenFragment"
         android:name="com.movistar.autocall.view.CallerScreenFragment"
         android:label="fragment_caller_screen"
-        tools:layout="@layout/fragment_caller_screen" />
+        tools:layout="@layout/fragment_caller_screen" >
+    </fragment>
     <fragment
         android:id="@+id/errorsScreenFragment"
         android:name="com.movistar.autocall.view.ErrorsScreenFragment"

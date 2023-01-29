@@ -17,6 +17,8 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.movistar.autocall.model.WRCodesTxt;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

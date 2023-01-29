@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 
 public class CallerScreenFragment extends Fragment {
@@ -63,7 +64,9 @@ public class CallerScreenFragment extends Fragment {
         getLifecycle().addObserver(mRequest);
         mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
+        List<String> codes = requireArguments().getStringArrayList("codes");
         mRequest.setRootUssdCode("*454#");
+        mRequest.setNumbers(codes);
 
     }
 

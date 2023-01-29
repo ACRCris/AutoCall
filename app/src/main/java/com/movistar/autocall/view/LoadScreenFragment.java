@@ -19,10 +19,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.movistar.autocall.viewmodel.WRCodesTxt;
 import com.movistar.autocall.viewmodel.LoadScreenViewModel;
 import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentLoadScreenBinding;
+
+import java.util.ArrayList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -72,8 +73,11 @@ public class LoadScreenFragment extends Fragment {
         NavController navController = navHostFragment.getNavController();
 
         final Observer<Boolean> isGrantedObserver = isGranted -> {
+
             if (isGranted) {
-                navController.navigate(R.id.callerScreenFragment);
+                Bundle bundle = new Bundle();
+                bundle.putStringArrayList("codes", new ArrayList<>(mRequest.getCodes()));
+                navController.navigate(R.id.callerScreenFragment, bundle);
 
             } else {
                 navController.navigate(R.id.errorsScreenFragment);

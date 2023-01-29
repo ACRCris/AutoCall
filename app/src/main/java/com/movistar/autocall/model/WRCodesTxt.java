@@ -1,4 +1,4 @@
-package com.movistar.autocall.viewmodel;
+package com.movistar.autocall.model;
 
 import android.app.Activity;
 import android.content.Context;
