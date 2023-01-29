@@ -2,8 +2,6 @@ package com.movistar.autocall.view;
 
 import android.annotation.SuppressLint;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -11,28 +9,19 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 
-import com.movistar.autocall.CallReceiver;
 import com.movistar.autocall.viewmodel.CallScreenViewModel;
-import com.movistar.autocall.viewmodel.TransactionReceiver;
 
 import com.movistar.autocall.R;
 import com.movistar.autocall.databinding.FragmentCallerScreenBinding;
@@ -66,78 +55,11 @@ public class CallerScreenFragment extends Fragment {
      * Some older devices needs a small delay between UI widget updates
      * and a change of the status and navigation bar.
      */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler(Looper.myLooper());
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
 
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-
-            Activity activity = getActivity();
-            if (activity != null
-                    && activity.getWindow() != null) {
-                activity.getWindow().getDecorView().setSystemUiVisibility(flags);
-            }
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.hide();
-            }
-
-        }
-    };
-    private View mContentView;
-    private View mControlsView;
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
-            mControlsView.setVisibility(View.VISIBLE);
-        }
-    };
-    private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
 
     private FragmentCallerScreenBinding binding;
     private CallScreenViewModel mRequest;
     private List<String> numbers = new ArrayList<>(Arrays.asList(
-            /*"*255*4#",
-            "*10#",
-            "*111#"));
-            "*133#",*/
             "*454*3*3*4*636014*3*3259718017*19790130*cantillo*3176460922*1*3116967498*18017*20230131*1#",
             "*454*3*3*4*636014*3*3259719171*19790130*clavijo*3176794414*1*3006250363*19171*20230131*1#",
             "*454*3*3*4*636014*3*3259722404*19790130*cubillos*3176794197*1*3132943168*22404*20230131*1#",
@@ -169,25 +91,23 @@ public class CallerScreenFragment extends Fragment {
             "*454*3*3*4*636014*3*3259717373*19810605*PINILLOS*3185444487*1*3223973968*17373*20230131*1#",
             "*454*3*3*4*636014*3*3259719404*19810605*OVALLE*3176236325*1*3222521327*19404*20230131*1#",
             "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230131*1#"));
-    int cont = 0;
     HashMap<String, HashSet<String>> map = new HashMap<>();
-
-
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
 
-
-        BroadcastReceiver transactionReceiver = new TransactionReceiver();
-        //boolean isPresent = Hover.isActionSimPresent("cd16b7af", requireActivity());
-        //Log.i("isPresent", String.valueOf(isPresent));
-        //Log.i("sim0", Hover.getPresentSims(requireActivity()).get(0).getOperatorName());
-        //.i("sim1", Hover.getPresentSims(requireActivity()).get(1).getOperatorName());
-
-        IntentFilter filter = new IntentFilter("com.movistar.autocall.PENDING_TRANSACTION_CREATED");
-        requireActivity().registerReceiver(transactionReceiver, filter);
+        Activity activity = requireActivity();
+        if (activity.getWindow() != null) {
+            activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
 
         mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry());
         getLifecycle().addObserver(mRequest);
@@ -206,54 +126,18 @@ public class CallerScreenFragment extends Fragment {
 
     }
 
-    private ActivityResultLauncher<Intent> sendUssd = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    Log.i("holallala", "" + result.getResultCode());
-                }
-                Log.i("holallala", "" + result.getResultCode());
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    // There are no request codes
-                    Intent data = result.getData();
-                }
-            });
-
-    private Intent i;
-    private void callHover() {
-        LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(pendingTransactionReceiver, new IntentFilter("com.movistar.autocall.PENDING_TRANSACTION_CREATED"));
-        sendUssd.launch(i);
-    }
-    private final BroadcastReceiver pendingTransactionReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent i) {
-            Log.i("recividododo22", "Recieved pending transaction created broadcast");
-            Log.i("recividododo22", "uuid: " + i.getStringExtra("uuid"));
-        }
-    };
-
-
-
-
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mVisible = true;
 
-        mControlsView = binding.fullscreenContentControls;
-        mContentView = binding.fullscreenContent;
 
         Button button = requireView().findViewById(R.id.call_button);
         map.put("KEY_LOGIN",new HashSet<>(Arrays.asList("espere", "waiting", "loading", "esperando")));
         map.put("KEY_ERROR",new HashSet<>(Arrays.asList("problema", "problem", "error", "null")));
         USSDApi ussdApi = USSDController.getInstance(requireActivity());
-
-
-
 
 
         final Observer<Boolean> makeCallObserver = makeCall -> {
@@ -267,18 +151,7 @@ public class CallerScreenFragment extends Fragment {
                             e.printStackTrace();
                         }
 
-
-                        mRequest.setMMI(numbers.get(0));
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            //mRequest.getRequest(requireActivity());
-                        }
                         Log.i("numerororor", "numoermo " + numbers.get(0));
-                        //numbers.remove(0);
-                        //callHover()
-
-
-
-
 
                         ussdApi.callUSSDInvoke("*454#", 0, map, new USSDController.CallbackInvoke() {
 
@@ -308,20 +181,6 @@ public class CallerScreenFragment extends Fragment {
 
 
                 }
-            }else{
-                synchronized (this) {
-                    try {
-                        wait(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        Log.i("Call2ScreenViewModel", "makeCall: " +mRequest.getTelecomManager().isInCall() + cont);
-                        cont++;
-                    }
-
-
-                }
             }
         };
 
@@ -334,27 +193,18 @@ public class CallerScreenFragment extends Fragment {
         });
 
 
-        // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
+
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
     }
-
 
 
     @Override
     public void onResume() {
         super.onResume();
         IntentFilter intentFilter = new IntentFilter("CallReceiver");
-        requireActivity().getApplication().registerReceiver(new CallReceiver(), intentFilter);
         if (getActivity() != null && getActivity().getWindow() != null) {
             getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
@@ -362,7 +212,6 @@ public class CallerScreenFragment extends Fragment {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
     }
 
     @Override
@@ -374,61 +223,13 @@ public class CallerScreenFragment extends Fragment {
             // Clear the systemUiVisibility flag
             getActivity().getWindow().getDecorView().setSystemUiVisibility(0);
         }
-        show();
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mContentView = null;
-        mControlsView = null;
-    }
 
-    private void toggle() {
-        if (mVisible) {
-            hide();
-        } else {
-            show();
-        }
-    }
-
-    private void hide() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-        mControlsView.setVisibility(View.GONE);
-        mVisible = false;
-
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    @SuppressLint("InlinedApi")
-    private void show() {
-        // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        mVisible = true;
-
-        // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.show();
-        }
-    }
-
-    /**
-     * Schedules a call to hide() in delay milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
     @Nullable

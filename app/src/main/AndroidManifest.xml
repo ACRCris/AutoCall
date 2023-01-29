@@ -46,27 +46,6 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <receiver
-            android:name=".viewmodel.TransactionReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.movistar.autocall.CONFIRMED_TRANSACTION"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.movistar.autocall.PENDING_TRANSACTION_CREATED"/>
-            </intent-filter>
-        </receiver>
-        <receiver android:name=".CallReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>
