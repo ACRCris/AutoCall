@@ -73,11 +73,23 @@ public class CallerScreenFragment extends Fragment {
             "*454*3*3*4*636014*3*3259719404*19810605*OVALLE*3176236325*1*3222521327*19404*20230131*1#",
             "*454*3*3*4*636014*3*3259722357*19810605*NAVARRO*3173579277*1*3143470488*22357*20230131*1#"));
     HashMap<String, HashSet<String>> map = new HashMap<>();
+    int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
+        Activity activity = requireActivity();
+        if (activity.getWindow() != null) {
+            activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
 
         mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry());
         getLifecycle().addObserver(mRequest);
@@ -176,7 +188,10 @@ public class CallerScreenFragment extends Fragment {
         super.onResume();
         if (getActivity() != null && getActivity().getWindow() != null) {
             getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            getActivity().getWindow().getDecorView().setSystemUiVisibility(flags);
+
         }
+
 
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
@@ -190,7 +205,7 @@ public class CallerScreenFragment extends Fragment {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
             // Clear the systemUiVisibility flag
-            getActivity().getWindow().getDecorView().setSystemUiVisibility(0);
+            getActivity().getWindow().getDecorView().setSystemUiVisibility(flags);
         }
 
     }
