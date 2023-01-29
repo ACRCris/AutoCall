@@ -37,10 +37,6 @@ public class MainActivity extends AppCompatActivity {
             activity.getWindow().getDecorView().setSystemUiVisibility(flags);
         }
 
-
-
-
-
     }
 
     @Override
