@@ -105,6 +105,8 @@ public class CallerScreenFragment extends Fragment {
                         mRequest.sendUSSDCode();
 
                     }
+            }else {
+                mRequest.write(requireActivity(), mRequest.getCodes());
             }
         };
 

@@ -23,6 +23,10 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.movistar.autocall.model.AppDatabase;
+import com.movistar.autocall.model.Code;
+import com.movistar.autocall.model.CodeDao;
+import com.movistar.autocall.model.DatabaseHelper;
 import com.romellfudi.ussdlibrary.USSDApi;
 import com.romellfudi.ussdlibrary.USSDController;
 
@@ -34,12 +38,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class CallScreenViewModel extends ViewModel implements DefaultLifecycleObserver {
+public class CallScreenViewModel extends ViewModel implements DefaultLifecycleObserver, WriteDatabase<List<Code>> {
 
 
     private MutableLiveData<Boolean> makeCall;
     private List<String> numbers = new ArrayList<>();
-
+    private List<Code> codes = new ArrayList<>();
 
     private final ActivityResultRegistry mRegistry;
     private TelecomManager telecomManager;
@@ -148,6 +152,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     }
 
     public void sendUSSDCode(){
+        //rootUssdCode = numbers.get(0).split("'*'")[0];
         ussdApi.callUSSDInvoke(rootUssdCode, 0, map, new USSDController.CallbackInvoke() {
 
             @Override
@@ -167,19 +172,28 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
+                                            Code code = new Code(numbers.get(0),message);
+                                            codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
                                                 getMakeCall().postValue(true);
+                                            } else  {
+                                                getMakeCall().postValue(false);
                                             }
                                         }
                                     });
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
+                            Code code = new Code(numbers.get(0),message);
+                            codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
                                 getMakeCall().postValue(true);
-                            }                        }
+                            } else  {
+                                getMakeCall().postValue(false);
+                            }
+                        }
                     }
                 });
             }
@@ -189,10 +203,13 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                 Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-
+                    Code code = new Code(numbers.get(0),message);
+                    codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
                         getMakeCall().postValue(true);
+                    }else {
+                        getMakeCall().postValue(false);
                     }
                 }
             }
@@ -204,4 +221,21 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     }
 
 
+    @Override
+    public void write(Context context, List<Code> codes) {
+        Runnable runnable = () -> {
+            AppDatabase db = DatabaseHelper.getDB(context);
+
+            CodeDao doctorDao = db.codeDao();
+            doctorDao.insertAll(codes);
+        };
+
+        new Thread(runnable).start();
+
+
+    }
+
+    public List<Code> getCodes() {
+        return codes;
+    }
 }
