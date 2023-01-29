@@ -11,6 +11,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -49,8 +50,10 @@ public class LoadScreenFragment extends Fragment {
             activity.getWindow().getDecorView().setSystemUiVisibility(flags);
         }
 
-        mRequest = new LoadScreenViewModel(requireActivity().getActivityResultRegistry());
+        mRequest = new LoadScreenViewModel(requireActivity().getActivityResultRegistry(), requireActivity());
         getLifecycle().addObserver(mRequest);
+        mRequest.setUriToLoad( Uri.parse(requireActivity().getExternalFilesDir(null).getAbsolutePath()));
+
 
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -59,8 +62,8 @@ public class LoadScreenFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        //mRequest.openDirectory(requireActivity().getApplication());
-        mRequest.requestRole();
+        mRequest.openDirectory();
+        //mRequest.requestRole();
 
 
        NavHostFragment navHostFragment =
@@ -70,14 +73,21 @@ public class LoadScreenFragment extends Fragment {
 
         final Observer<Boolean> isGrantedObserver = isGranted -> {
             if (isGranted) {
-                //mRequest.openTxt(requireActivity());
-                //navController.navigate(R.id.callerScreenFragment);
+                navController.navigate(R.id.callerScreenFragment);
 
             } else {
                 navController.navigate(R.id.errorsScreenFragment);
             }
         };
+
+        final Observer<Boolean> isReadDataObserver = isReadData -> {
+            if (isReadData) {
+                mRequest.requestRole();
+            }
+        };
+
         mRequest.getIsRoleGranted().observe(getViewLifecycleOwner(), isGrantedObserver);
+        mRequest.getIsReadData().observe(getViewLifecycleOwner(), isReadDataObserver);
 
         // Inflate the layout for this fragment*/
         binding = FragmentLoadScreenBinding.inflate(inflater, container, false);

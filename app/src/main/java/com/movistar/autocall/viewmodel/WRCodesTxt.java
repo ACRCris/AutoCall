@@ -28,6 +28,8 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class WRCodesTxt {
@@ -58,8 +60,8 @@ public class WRCodesTxt {
         }
     }
 
-    private String readTextFromUri(Uri uri,Context context) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
+    public List<String> readTextFromUri(Uri uri, Context context) throws IOException {
+        List<String> list =new ArrayList<>();
         try (InputStream inputStream =
                      context.getContentResolver().openInputStream(uri)) {
             try (BufferedReader reader = new BufferedReader(
@@ -67,10 +69,14 @@ public class WRCodesTxt {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     Log.i("mostrarcont", "readTextFromUri: " + line);
-                    stringBuilder.append(line);
+                    list.add(line);
                 }
             }
         }
-        return stringBuilder.toString();
+        return list;
+
     }
+
 }
+
+

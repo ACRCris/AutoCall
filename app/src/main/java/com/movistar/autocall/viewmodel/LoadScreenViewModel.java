@@ -20,10 +20,14 @@ import androidx.lifecycle.ViewModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.List;
 
 public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver {
 
     private MutableLiveData<Boolean> mIsRoleGranted;
+    private MutableLiveData<Boolean> isReadData;
+    private Uri uriToLoad;
+    private List<String> codes;
 
 
 
@@ -34,6 +38,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> getRequestPermissionManager;
     private WRCodesTxt wrCodesTxt;
+    private final Context context;
 
     public MutableLiveData<Boolean> getIsRoleGranted() {
         if (mIsRoleGranted == null) {
@@ -42,12 +47,21 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         return mIsRoleGranted;
     }
 
-
-
-    public LoadScreenViewModel(@NotNull ActivityResultRegistry mRegistry) {
-        this.mRegistry = mRegistry;
+    public MutableLiveData<Boolean> getIsReadData() {
+        if (isReadData == null) {
+            isReadData = new MutableLiveData<>();
+        }
+        return isReadData;
     }
 
+
+
+    public LoadScreenViewModel(@NotNull ActivityResultRegistry mRegistry, Context context) {
+        this.mRegistry = mRegistry;
+        this.context = context;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onCreate(@NotNull LifecycleOwner owner) {
 
         requestPermissionLauncher =  mRegistry.register("call_phone_permission", owner, new ActivityResultContracts.RequestMultiplePermissions(),
@@ -66,11 +80,13 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                     if (result.getResultCode() == -1) {
                         Log.i("WRCodesTXT", "openTxt: " + result.getData().getDataString() + " " + result.getResultCode());
                         //getMetaTxt(result.getData().getData(), context);
-                        /*try {
-                            readTextFromUri(result.getData().getData(), context);
+                        WRCodesTxt wrCodesTxt = new WRCodesTxt();
+                        getIsReadData().postValue(true);
+                        try {
+                           codes= wrCodesTxt.readTextFromUri(result.getData().getData(), context);
                         } catch (IOException e) {
                             e.printStackTrace();
-                        }*/
+                        }
                     } else {
                         //permission granted
                     }
@@ -81,6 +97,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                     Log.i("WRCodesTXT", "onCreate: " + result.getData().getDataString() + " " + result.getResultCode());
                     if (result.getResultCode() == -1) {
                         openTxt(Uri.parse(result.getData().getDataString()));
+
                     } else {
                         //permission granted
                     }
@@ -102,7 +119,13 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void setUriToLoad(Uri uriToLoad) {
+        this.uriToLoad = uriToLoad;
+    }
+
+    public List<String> getCodes() {
+        return codes;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void createTxt( Uri pickerInitialUri){
@@ -118,14 +141,13 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void openDirectory(Uri uriToLoad) {
+    public void openDirectory() {
         // Choose a directory using the system's file picker.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 
         // Optionally, specify a URI for the directory that should be opened in
         // the system file picker when it loads.
         intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uriToLoad);
-
         openDirectory.launch(intent);
     }
 
