@@ -43,9 +43,6 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     public void onCreate(@NotNull LifecycleOwner owner) {
 
-
-
-
         requestPermissionLauncher =  mRegistry.register("call_phone_permission", owner, new ActivityResultContracts.RequestMultiplePermissions(),
                 result -> {
                     if(Boolean.TRUE.equals(result.get(Manifest.permission.CALL_PHONE))
@@ -56,10 +53,6 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         mIsRoleGranted.setValue(false);
                     }
                 });
-
-
-
-
     }
 
     public void requestRole(Context context) {
