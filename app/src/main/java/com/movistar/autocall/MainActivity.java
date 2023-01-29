@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.Button;
 import android.Manifest;
 
-import com.hover.sdk.api.Hover;
 import com.movistar.autocall.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
         // btn = findViewById(R.id.button2);
 
-        Hover.initialize(this);
 
 
 

@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.movistar.autocall"
-        minSdk 21
+        minSdk 23
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -42,5 +42,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation "androidx.navigation:navigation-fragment:2.5.3"
     implementation "androidx.navigation:navigation-ui:2.5.3"
-    implementation 'com.hover:android-sdk:1.7.3'
 }
