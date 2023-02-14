@@ -106,7 +106,7 @@ public class CallerScreenFragment extends Fragment {
 
                     }
             }else {
-                mRequest.write(requireActivity(), mRequest.getCodes());
+                //mRequest.write(requireActivity(), mRequest.getCodes());
             }
         };
 

@@ -152,13 +152,14 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     }
 
     public void sendUSSDCode(){
-        //rootUssdCode = numbers.get(0).split("'*'")[0];
+        rootUssdCode = "*"+numbers.get(0).split("\\*")[1]+"#";
+        String ciudad = numbers.get(0).split("\\*")[0];
         ussdApi.callUSSDInvoke(rootUssdCode, 0, map, new USSDController.CallbackInvoke() {
 
             @Override
             public void responseInvoke(String message) {
                 String dataToSend = numbers.get(0).replace(rootUssdCode.replace("#","")+"*",
-                        "").replace("#","");// <- send "data" into USSD's input text
+                        "").replace("#","").replace(ciudad, "");// <- send "data" into USSD's input text
 
 
                 ussdApi.send(dataToSend,new USSDController.CallbackMessage(){
@@ -172,7 +173,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
-                                            Code code = new Code(numbers.get(0),message);
+                                            Code code = new Code(numbers.get(0),message, null);
                                             codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
@@ -185,7 +186,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
-                            Code code = new Code(numbers.get(0),message);
+                            Code code = new Code(numbers.get(0),message, null);
                             codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
@@ -203,7 +204,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                 Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-                    Code code = new Code(numbers.get(0),message);
+                    Code code = new Code(numbers.get(0),message, null);
                     codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
@@ -235,7 +236,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     }
 
-    public List<Code> getCodes() {
-        return codes;
-    }
+
+
+
 }

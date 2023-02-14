@@ -17,19 +17,29 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.movistar.autocall.model.AppDatabase;
+import com.movistar.autocall.model.Code;
+import com.movistar.autocall.model.CodeDao;
+import com.movistar.autocall.model.DatabaseHelper;
 import com.movistar.autocall.model.WRCodesTxt;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver {
+public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver, WriteDatabase<List<Code>>, ReadDatabase {
 
     private MutableLiveData<Boolean> mIsRoleGranted;
     private MutableLiveData<Boolean> isReadData;
     private Uri uriToLoad;
     private List<String> codes;
+
+    private List<Code> codesList = new ArrayList<>();
 
 
 
@@ -83,9 +93,10 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         Log.i("WRCodesTXT", "openTxt: " + result.getData().getDataString() + " " + result.getResultCode());
                         //getMetaTxt(result.getData().getData(), context);
                         WRCodesTxt wrCodesTxt = new WRCodesTxt();
-                        getIsReadData().postValue(true);
                         try {
                            codes= wrCodesTxt.readTextFromUri(result.getData().getData(), context);
+                           List<Code> listCodes = fromListStrigToListCodes();
+                           write(context, listCodes);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -125,9 +136,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         this.uriToLoad = uriToLoad;
     }
 
-    public List<String> getCodes() {
-        return codes;
-    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void createTxt( Uri pickerInitialUri){
@@ -164,5 +173,67 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
         open_txt.launch(intent);
 
+    }
+
+    private List<Code>  fromListStrigToListCodes(){
+        List<Code> codes = new ArrayList<>();
+        for (String code: this.codes) {
+            String[] partsCode = code.split("\\*", 2);
+
+            codes.add(new Code(partsCode[1], null, partsCode[1]));
+        }
+        return codes;
+    }
+    public List<String> getListStringFromListCodes(List<Code> codes){
+        List<String> listString = new ArrayList<>();
+        for (Code code: codes) {
+            listString.add(code.getCiudad()+"*"+code.getCode());
+        }
+        return listString;
+    }
+
+    @Override
+    public void write(Context context, List<Code> codes) {
+        Runnable runnable = () -> {
+            AppDatabase db = DatabaseHelper.getDB(context);
+
+            CodeDao doctorDao = db.codeDao();
+            doctorDao.insertAll(codes);
+            read(context);
+
+        };
+
+        new Thread(runnable).start();
+
+
+    }
+
+    @Override
+    public void read(Context context) {
+        Future<List<Code>> future = Executors.newSingleThreadExecutor().submit(() -> {
+            synchronized (this) {
+                AppDatabase db = DatabaseHelper.getDB(context);
+                CodeDao doctorDao = db.codeDao();
+                return doctorDao.getCodesOrderByCiudad();
+            }
+        });
+
+        Runnable runnable = () -> {
+            try {
+                codesList.addAll(future.get());
+                Log.i("WRCodesTXT", "readxdsdsdsdsd: " + codesList.size());
+                getIsReadData().postValue(true);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
+
+    }
+
+    public List<Code> getListCodes(){
+        return codesList;
     }
 }

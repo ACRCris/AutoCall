@@ -34,7 +34,7 @@ import java.util.Objects;
 
 public class WRCodesTxt {
 
-    public void getMetaTxt(Uri uri,Context context) {
+    public void getMetadataTxt(Uri uri,Context context) {
 
         try (Cursor cursor = context.getContentResolver()
                 .query(uri, null, null, null, null, null)) {
