@@ -7,6 +7,6 @@ import androidx.room.Room;
 public class DatabaseHelper {
     public static AppDatabase getDB(Context context) {
         return Room.databaseBuilder(context,
-                AppDatabase.class, "MedicalData.db").build();
+                AppDatabase.class, "ussdata.db").build();
     }
 }

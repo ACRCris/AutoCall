@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -75,6 +76,25 @@ public class WRCodesTxt {
         }
         return list;
 
+    }
+
+    public Uri alterDocument(Uri uri,Context context, List<Code> codes)  {
+        try {
+            ParcelFileDescriptor pfd = context.getContentResolver().
+                    openFileDescriptor(uri, "w");
+            FileOutputStream fileOutputStream =
+                    new FileOutputStream(pfd.getFileDescriptor());
+
+            for (Code code : codes) {
+                fileOutputStream.write((code.getCode()+ "\t" + code.getResult()+"\n").getBytes());
+            }
+            // Let the document provider know you're done by closing the stream.
+            fileOutputStream.close();
+            pfd.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return uri;
     }
 
 }

@@ -180,7 +180,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         for (String code: this.codes) {
             String[] partsCode = code.split("\\*", 2);
 
-            codes.add(new Code(partsCode[1], null, partsCode[1]));
+            codes.add(new Code(partsCode[1], "", partsCode[0]));
         }
         return codes;
     }

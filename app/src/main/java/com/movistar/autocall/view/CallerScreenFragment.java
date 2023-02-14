@@ -60,7 +60,7 @@ public class CallerScreenFragment extends Fragment {
             activity.getWindow().getDecorView().setSystemUiVisibility(flags);
         }
 
-        mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry());
+        mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry(), requireContext());
         getLifecycle().addObserver(mRequest);
         mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
@@ -90,23 +90,23 @@ public class CallerScreenFragment extends Fragment {
 
 
         Button button = requireView().findViewById(R.id.call_button);
-
+        Button export = requireView().findViewById(R.id.export_button);
 
 
         final Observer<Boolean> makeCallObserver = makeCall -> {
 
             if (makeCall) {
-                    synchronized (this){
-                        try {
-                            wait(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        mRequest.sendUSSDCode();
-
+                synchronized (this){
+                    try {
+                        wait(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                    mRequest.sendUSSDCode();
+
+                }
             }else {
-                //mRequest.write(requireActivity(), mRequest.getCodes());
+                mRequest.write(requireActivity(), mRequest.getCodes());
             }
         };
 
@@ -116,6 +116,22 @@ public class CallerScreenFragment extends Fragment {
 
         button.setOnClickListener(view1 -> {
             mRequest.getMakeCall().setValue(true);
+        });
+
+        final Observer<Boolean> exportObserver = exportCall -> {
+            if (exportCall) {
+                export.setEnabled(true);
+            }
+        };
+
+        mRequest.getIsWriteData().observe(getViewLifecycleOwner(), exportObserver);
+
+        export.setEnabled(false);
+
+        export.setOnClickListener(view1 -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mRequest.createTxt();
+            }
         });
 
 

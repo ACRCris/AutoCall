@@ -20,7 +20,7 @@ public interface CodeDao {
     @Query("SELECT * FROM code WHERE code = :code")
     Code findByCode(String code);
 
-    @Query("SELECT * FROM code WHERE ciudad = null ORDER BY ciudad")
+    @Query("SELECT * FROM code WHERE result = \"\" ORDER BY ciudad")
     List<Code> getCodesOrderByCiudad();
 
     @Query("DELETE FROM code")
