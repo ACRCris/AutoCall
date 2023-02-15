@@ -53,6 +53,8 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     private List<Code> codes = new ArrayList<>();
     private ActivityResultLauncher<Intent> create_txt;
 
+    private String ciudad;
+
     private final ActivityResultRegistry mRegistry;
     private TelecomManager telecomManager;
     private Uri callUri;
@@ -136,6 +138,10 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
         this.mmi = mmi;
     }
 
+    public void setCiudad(String ciudad){
+        this.ciudad = ciudad;
+    }
+
     public  TelecomManager getTelecomManager(){
         return telecomManager;
     }
@@ -188,7 +194,8 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     public void sendUSSDCode(){
         rootUssdCode = "*"+numbers.get(0).split("\\*")[1]+"#";
-        String ciudad = numbers.get(0).split("\\*")[0];
+        ciudad = numbers.get(0).split("\\*")[0];
+        ussdCode = numbers.get(0);
         Log.i("CallScreenViewModel", "sendUSSDCode: "+rootUssdCode+ " "+ciudad);
         String dataToSend = numbers.get(0).replace(rootUssdCode.replace("#","")+"*",
                 "").replace("#","").replace(ciudad, "");
@@ -238,7 +245,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
             @Override
             public void over(String message) {
-                Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + dataToSend);
+                Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
                     Code code = new Code(numbers.get(0),message,null);
@@ -292,5 +299,17 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     public List<Code> getCodes() {
         return codes;
+    }
+
+    public String ciudad(){
+        return ciudad;
+    }
+
+    public List<String> getNumbers() {
+        return numbers;
+    }
+
+    public String ussdCode(){
+        return ussdCode;
     }
 }
