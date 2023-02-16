@@ -67,7 +67,7 @@ public class LoadScreenFragment extends Fragment {
         //mRequest.requestRole();
 
 
-       NavHostFragment navHostFragment =
+        NavHostFragment navHostFragment =
                 (NavHostFragment) requireActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         assert navHostFragment != null;
         NavController navController = navHostFragment.getNavController();
@@ -76,7 +76,7 @@ public class LoadScreenFragment extends Fragment {
 
             if (isGranted) {
                 Bundle bundle = new Bundle();
-                bundle.putStringArrayList("codes", new ArrayList<>(mRequest.getListStringFromListCodes(mRequest.getListCodes())));
+                bundle.putStringArrayList("codes", new ArrayList<>(mRequest.getCodes()));
                 navController.navigate(R.id.callerScreenFragment, bundle);
 
             } else {
