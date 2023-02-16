@@ -2,6 +2,7 @@ package com.movistar.autocall.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity
@@ -19,12 +20,18 @@ public class Code {
     @ColumnInfo(name = "result")
     private String result;
 
+    @Ignore
+    public Code(int id,String code, String result, String ciudad) {
+        this.id = id;
+        this.code = code;
+        this.result = result;
+        this.ciudad = ciudad;
+    }
     public Code(String code, String result, String ciudad) {
         this.code = code;
         this.result = result;
         this.ciudad = ciudad;
     }
-
     public int getId() {
         return id;
     }

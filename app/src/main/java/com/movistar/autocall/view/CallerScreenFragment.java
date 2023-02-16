@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.movistar.autocall.model.Code;
 import com.movistar.autocall.viewmodel.CallScreenViewModel;
 
 import com.movistar.autocall.R;
@@ -67,8 +68,7 @@ public class CallerScreenFragment extends Fragment {
         mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
         List<String> codes = requireArguments().getStringArrayList("codes");
-        mRequest.setRootUssdCode("*454#");
-        mRequest.setCiudad(codes.get(0).split("\\*")[0]);
+        mRequest.setCiudad(codes.get(0).split("\\*")[1]);
         mRequest.setNumbers(codes);
 
     }
@@ -112,12 +112,17 @@ public class CallerScreenFragment extends Fragment {
                         List<String> numbers = mRequest.getNumbers();
                         if(mRequest.ussdCode() != null)
                             numbers.set(0, mRequest.ussdCode());
+                        List<Code> codes = mRequest.getCodes();
+                        if(codes.size() > 0) {
+                            codes.remove(codes.size() - 1);
+                            //mRequest.setCodes(codes);
+                        }
                         mRequest.setNumbers(numbers);
                         showAlertDialogSim2();
                     }
                 }
             }else {
-                mRequest.write(requireActivity(), mRequest.getCodes());
+                mRequest.update(requireActivity(), mRequest.getCodes());
             }
         };
 

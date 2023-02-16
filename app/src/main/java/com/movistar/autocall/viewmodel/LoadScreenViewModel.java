@@ -187,7 +187,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
     public List<String> getListStringFromListCodes(List<Code> codes){
         List<String> listString = new ArrayList<>();
         for (Code code: codes) {
-            listString.add(code.getCiudad()+"*"+code.getCode());
+            listString.add(code.getId()+"*"+code.getCiudad()+"*"+code.getCode());
         }
         return listString;
     }
@@ -221,7 +221,6 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         Runnable runnable = () -> {
             try {
                 codesList.addAll(future.get());
-                Log.i("WRCodesTXT", "readxdsdsdsdsd: " + codesList.size());
                 getIsReadData().postValue(true);
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();

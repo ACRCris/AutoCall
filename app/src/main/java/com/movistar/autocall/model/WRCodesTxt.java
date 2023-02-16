@@ -84,8 +84,11 @@ public class WRCodesTxt {
                     openFileDescriptor(uri, "w");
             FileOutputStream fileOutputStream =
                     new FileOutputStream(pfd.getFileDescriptor());
+            Log.i("codedddd:2" ,  codes.size() + "");
 
             for (Code code : codes) {
+
+                Log.i("codedddd:" ,  code.getCode() + " result: " + code.getResult());
                 fileOutputStream.write((code.getCode()+ "\t" + code.getResult()+"\n").getBytes());
             }
             // Let the document provider know you're done by closing the stream.

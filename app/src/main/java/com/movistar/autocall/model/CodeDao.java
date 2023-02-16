@@ -3,6 +3,7 @@ package com.movistar.autocall.model;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -30,6 +31,9 @@ public interface CodeDao {
     @androidx.room.Delete
     void delete(Code code);
 
-    @androidx.room.Update
+    @Update
     void update(Code code);
+
+    @Update
+    void updateAll(List<Code> codes);
 }

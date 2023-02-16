@@ -5,5 +5,5 @@ import android.content.Context;
 import java.util.List;
 
 public interface UpdateDatabase<T> {
-    void update(Context context, List<T> t);
+    void update(Context context, T data);
 }
