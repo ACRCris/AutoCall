@@ -208,7 +208,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
-                                            Code code = new Code(numbers.get(0),message);
+                                            Code code = new Code(numbers.get(0),message,"fii");
                                             codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
@@ -221,7 +221,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
-                            Code code = new Code(numbers.get(0),message);
+                            Code code = new Code(numbers.get(0),message, "fii");
                             codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
@@ -239,7 +239,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                 Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-                    Code code = new Code(numbers.get(0),message);
+                    Code code = new Code(numbers.get(0),message, "giii");
                     codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
