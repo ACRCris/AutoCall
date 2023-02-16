@@ -76,7 +76,7 @@ public class LoadScreenFragment extends Fragment {
 
             if (isGranted) {
                 Bundle bundle = new Bundle();
-                bundle.putStringArrayList("codes", new ArrayList<>(mRequest.getCodes()));
+                bundle.putStringArrayList("codes", new ArrayList<>(mRequest.getListStringFromListCodes(mRequest.getCodesList())));
                 navController.navigate(R.id.callerScreenFragment, bundle);
 
             } else {

@@ -193,4 +193,8 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         }
         return listString;
     }
+
+    public List<Code> getCodesList() {
+        return codesList;
+    }
 }
