@@ -26,20 +26,20 @@ import com.movistar.autocall.model.WRCodesTxt;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver {
+public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver, ReadDatabase {
 
     private MutableLiveData<Boolean> mIsRoleGranted;
     private MutableLiveData<Boolean> isReadData;
     private Uri uriToLoad;
     private List<String> codes;
 
-
-
+    private List<Code> codesList = new ArrayList<>();
     private final ActivityResultRegistry mRegistry;
     private ActivityResultLauncher<Intent> open_txt;
     private ActivityResultLauncher<Intent> openDirectory;
