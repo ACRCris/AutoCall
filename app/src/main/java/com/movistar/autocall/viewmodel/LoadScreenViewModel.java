@@ -176,4 +176,21 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         thread.start();
 
     }
+
+    private List<Code>  fromListStrigToListCodes(){
+        List<Code> codes = new ArrayList<>();
+        for (String code: this.codes) {
+            String[] partsCode = code.split("\\*", 2);
+
+            codes.add(new Code(partsCode[1], "", partsCode[0]));
+        }
+        return codes;
+    }
+    public List<String> getListStringFromListCodes(List<Code> codes){
+        List<String> listString = new ArrayList<>();
+        for (Code code: codes) {
+            listString.add(code.getId()+"*"+code.getCiudad()+"*"+code.getCode());
+        }
+        return listString;
+    }
 }
