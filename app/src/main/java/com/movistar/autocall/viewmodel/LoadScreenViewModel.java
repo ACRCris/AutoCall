@@ -17,12 +17,19 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.movistar.autocall.model.AppDatabase;
+import com.movistar.autocall.model.Code;
+import com.movistar.autocall.model.CodeDao;
+import com.movistar.autocall.model.DatabaseHelper;
 import com.movistar.autocall.model.WRCodesTxt;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver {
 
@@ -143,6 +150,30 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
         // the system file picker when your app creates the document.
         intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
         open_txt.launch(intent);
+
+    }
+
+    @Override
+    public void read(Context context) {
+        Future<List<Code>> future = Executors.newSingleThreadExecutor().submit(() -> {
+            synchronized (this) {
+                AppDatabase db = DatabaseHelper.getDB(context);
+                CodeDao doctorDao = db.codeDao();
+                return doctorDao.getCodesOrderByCiudad();
+            }
+        });
+
+        Runnable runnable = () -> {
+            try {
+                codesList.addAll(future.get());
+                getIsReadData().postValue(true);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
 
     }
 }
