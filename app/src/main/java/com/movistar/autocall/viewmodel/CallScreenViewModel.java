@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class CallScreenViewModel extends ViewModel implements DefaultLifecycleObserver, WriteDatabase<List<Code>> {
+public class CallScreenViewModel extends ViewModel implements DefaultLifecycleObserver, WriteDatabase<List<Code>>, UpdateDatabase<List<Code>> {
 
 
     private MutableLiveData<Boolean> makeCall;
@@ -53,16 +53,20 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     private List<Code> codes = new ArrayList<>();
     private ActivityResultLauncher<Intent> create_txt;
 
+    private String ciudad;
+
     private final ActivityResultRegistry mRegistry;
     private TelecomManager telecomManager;
     private Uri callUri;
-    private String rootUssdCode;
-    private String ussdCode;
+
+
+
     private PhoneAccountHandle sim1;
     private String mmi;
     private HashMap<String, HashSet<String>> map = new HashMap<>();
     private USSDApi ussdApi;
     private Context context;
+    private String ussdCode;
 
     public MutableLiveData<Boolean> getMakeCall() {
         if (makeCall == null) {
@@ -94,9 +98,11 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         Uri uri = result.getData().getData();
                         if (uri != null) {
                             WRCodesTxt wrCodesTxt = new WRCodesTxt();
+                            Log.i("CallScreenViewModel", "onCreate: " + codes.size());
                             wrCodesTxt.alterDocument(uri, context, codes);
                         }
                     } else {
+                        Log.i("CallScreenViewModel", "onCreate: " + "no se pudo crear el archivo");
                         //permission granted
                     }
                 });
@@ -134,6 +140,10 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     public void setMMI(String mmi){
 
         this.mmi = mmi;
+    }
+
+    public void setCiudad(String ciudad){
+        this.ciudad = ciudad;
     }
 
     public  TelecomManager getTelecomManager(){
@@ -178,25 +188,17 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
         ussdApi = USSDController.getInstance(context);
     }
 
-    public void setRootUssdCode(String rootUssdCode) {
-        this.rootUssdCode = rootUssdCode;
-    }
-
-    public void setUssdCode(String ussdCode) {
-        this.ussdCode = ussdCode;
-    }
-
     public void sendUSSDCode(){
-        rootUssdCode = "*"+numbers.get(0).split("\\*")[1]+"#";
-        Log.i("CallScreenViewModel", "sendUSSDCode: "+rootUssdCode);
+        String [] data = descompesCode();
+        String rootUssdCode = data[2];
+        String dataToSend = data[3];
+        ussdCode = data[4];
+        ciudad = data[1];
+        int id = Integer.parseInt(data[0]);
         ussdApi.callUSSDInvoke(rootUssdCode, 0, map, new USSDController.CallbackInvoke() {
 
             @Override
             public void responseInvoke(String message) {
-                String dataToSend = numbers.get(0).replace(rootUssdCode.replace("#","")+"*",
-                        "").replace("#","");// <- send "data" into USSD's input text
-
-
                 ussdApi.send(dataToSend,new USSDController.CallbackMessage(){
                     @Override
                     public void responseMessage(String message) {
@@ -208,7 +210,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
-                                            Code code = new Code(numbers.get(0),message,"fii");
+                                            Code code = new Code(id,numbers.get(0),message, ciudad);
                                             codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
@@ -221,7 +223,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
-                            Code code = new Code(numbers.get(0),message, "fii");
+                            Code code = new Code(id,numbers.get(0),message, null);
                             codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
@@ -239,7 +241,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                 Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-                    Code code = new Code(numbers.get(0),message, "giii");
+                    Code code = new Code(id, numbers.get(0),message,null);
                     codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
@@ -279,7 +281,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
             AppDatabase db = DatabaseHelper.getDB(context);
 
             CodeDao doctorDao = db.codeDao();
-            doctorDao.insertAll(codes);
+            //doctorDao.insertAll(codes);
             getIsWriteData().postValue(true);
         };
 
@@ -290,5 +292,47 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     public List<Code> getCodes() {
         return codes;
+    }
+
+    public String ciudad(){
+        return ciudad;
+    }
+
+    public List<String> getNumbers() {
+        return numbers;
+    }
+
+    public String ussdCode(){
+        return ussdCode;
+    }
+
+    public void setCodes(List<Code> codes) {
+        this.codes = codes;
+    }
+
+    public String[] descompesCode(){
+        String[] data = new String[5];
+
+        data[2] = "*"+numbers.get(0).split("\\*")[2]+"#";
+        data[1] = numbers.get(0).split("\\*")[1];
+        data[0] = numbers.get(0).split("\\*")[0];
+        data[4] = numbers.get(0);
+        data[3]  = numbers.get(0).replace(data[2].replace("#","")+"*",
+                "").replace("#","").replace(data[1], "").replaceFirst(data[0], "");
+
+        return data;
+    }
+    @Override
+    public void update(Context context, List<Code> codes) {
+        Runnable runnable = () -> {
+            AppDatabase db = DatabaseHelper.getDB(context);
+
+            CodeDao doctorDao = db.codeDao();
+            doctorDao.updateAll(codes);
+            getIsWriteData().postValue(true);
+        };
+
+        new Thread(runnable).start();
+
     }
 }

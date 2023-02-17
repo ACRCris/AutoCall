@@ -65,7 +65,7 @@ public class CallerScreenFragment extends Fragment {
         mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
         List<String> codes = requireArguments().getStringArrayList("codes");
-        mRequest.setRootUssdCode("*454#");
+        //mRequest.setRootUssdCode("*454#");
         mRequest.setNumbers(codes);
 
     }
