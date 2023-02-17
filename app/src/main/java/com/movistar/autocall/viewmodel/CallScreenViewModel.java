@@ -67,6 +67,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     private USSDApi ussdApi;
     private Context context;
     private String ussdCode;
+    private int id;
 
     public MutableLiveData<Boolean> getMakeCall() {
         if (makeCall == null) {
@@ -190,11 +191,11 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     public void sendUSSDCode(){
         String [] data = descompesCode();
-        String rootUssdCode = data[2];
+        String rootUssdCode = "*" + data[2]+"#";
         String dataToSend = data[3];
         ussdCode = data[4];
         ciudad = data[1];
-        int id = Integer.parseInt(data[0]);
+        id = Integer.parseInt(data[0]);
         ussdApi.callUSSDInvoke(rootUssdCode, 0, map, new USSDController.CallbackInvoke() {
 
             @Override
@@ -210,7 +211,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
-                                            Code code = new Code(id,numbers.get(0),message, ciudad);
+                                            Code code = new Code(id,data[2]+dataToSend,message, ciudad);
                                             codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
@@ -223,7 +224,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
-                            Code code = new Code(id,numbers.get(0),message, null);
+                            Code code = new Code(id,data[2]+dataToSend,message, ciudad);
                             codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
@@ -238,10 +239,10 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
             @Override
             public void over(String message) {
-                Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + numbers.get(0));
+                Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + dataToSend);
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-                    Code code = new Code(id, numbers.get(0),message,null);
+                    Code code = new Code(id, data[2]+dataToSend,message,ciudad);
                     codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
@@ -306,6 +307,10 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
         return ussdCode;
     }
 
+    public int getId(){
+        return id;
+    }
+
     public void setCodes(List<Code> codes) {
         this.codes = codes;
     }
@@ -313,13 +318,15 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     public String[] descompesCode(){
         String[] data = new String[5];
 
-        data[2] = "*"+numbers.get(0).split("\\*")[2]+"#";
+        data[2] = numbers.get(0).split("\\*")[2];
         data[1] = numbers.get(0).split("\\*")[1];
         data[0] = numbers.get(0).split("\\*")[0];
         data[4] = numbers.get(0);
-        data[3]  = numbers.get(0).replace(data[2].replace("#","")+"*",
-                "").replace("#","").replace(data[1], "").replaceFirst(data[0], "");
+        data[3]  = numbers.get(0).replace(data[0]+"*"+data[1]+"*"+data[2]+"*", "").replace("#","");
 
+
+        Log.i("RepuestaALA", "responseMessage: "+data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4]);
+        Log.i("RepuestaALA", "responseMessage:"+ numbers.get(0));
         return data;
     }
     @Override

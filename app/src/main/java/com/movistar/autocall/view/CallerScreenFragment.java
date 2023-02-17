@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.movistar.autocall.model.Code;
 import com.movistar.autocall.viewmodel.CallScreenViewModel;
 
 import com.movistar.autocall.R;
@@ -42,6 +44,7 @@ public class CallerScreenFragment extends Fragment {
     private FragmentCallerScreenBinding binding;
     private CallScreenViewModel mRequest;
 
+    private String ciudadActual = "";
     int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -49,7 +52,6 @@ public class CallerScreenFragment extends Fragment {
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
     @SuppressLint("MissingPermission")
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -65,8 +67,12 @@ public class CallerScreenFragment extends Fragment {
         mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
         List<String> codes = requireArguments().getStringArrayList("codes");
-        //mRequest.setRootUssdCode("*454#");
+        mRequest.setCiudad(codes.get(0).split("\\*")[1]);
         mRequest.setNumbers(codes);
+
+        for (String code : codes) {
+            Log.d("CODESxxxxx", code);
+        }
 
     }
 
@@ -81,7 +87,6 @@ public class CallerScreenFragment extends Fragment {
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -102,11 +107,26 @@ public class CallerScreenFragment extends Fragment {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    mRequest.sendUSSDCode();
+                    if(ciudadActual.equals(mRequest.ciudad())) {
+                        mRequest.sendUSSDCode();
+                    }
+                    else {
+                        List<String> numbers = mRequest.getNumbers();
+                        if(mRequest.ussdCode() != null)
+                            numbers.set(0,mRequest.ussdCode());
+                        List<Code> codes = mRequest.getCodes();
+                        /*if(codes.size() > 0) {
+                            codes.remove(codes.size() - 1);
+                            //mRequest.setCodes(codes);
+                        }
+                         */
 
+                        mRequest.setNumbers(numbers);
+                        showAlertDialogSim2();
+                    }
                 }
             }else {
-                mRequest.write(requireActivity(), mRequest.getCodes());
+                mRequest.update(requireActivity(), mRequest.getCodes());
             }
         };
 
@@ -115,7 +135,12 @@ public class CallerScreenFragment extends Fragment {
 
 
         button.setOnClickListener(view1 -> {
-            mRequest.getMakeCall().setValue(true);
+            if(ciudadActual.equals(mRequest.ciudad())){
+
+                mRequest.getMakeCall().setValue(true);
+            }
+            else
+                showAlertDialogSim();
         });
 
         final Observer<Boolean> exportObserver = exportCall -> {
@@ -140,6 +165,30 @@ public class CallerScreenFragment extends Fragment {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
+    }
+
+    public void showAlertDialogSim() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Colocar SIM");
+        builder.setMessage("Pofavor colocar la SIM " + mRequest.ciudad());
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            mRequest.getMakeCall().setValue(true);
+            ciudadActual = mRequest.ciudad();
+            dialog.dismiss();
+        });
+        builder.show();
+    }
+
+    public void showAlertDialogSim2() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Colocar SIM");
+        builder.setMessage("Pofavor colocar la SIM " + mRequest.ciudad());
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            mRequest.sendUSSDCode();
+            ciudadActual = mRequest.ciudad();
+            dialog.dismiss();
+        });
+        builder.show();
     }
 
 

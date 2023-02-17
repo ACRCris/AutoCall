@@ -64,6 +64,8 @@ public class Code {
         this.result = result;
     }
 
-
+    public String toString(){
+        return this.id +","+ this.ciudad+ "," + this.code+","+this.result;
+    }
 
 }
