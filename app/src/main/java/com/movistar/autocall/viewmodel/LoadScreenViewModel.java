@@ -89,9 +89,10 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         Log.i("WRCodesTXT", "openTxt: " + result.getData().getDataString() + " " + result.getResultCode());
                         //getMetaTxt(result.getData().getData(), context);
                         WRCodesTxt wrCodesTxt = new WRCodesTxt();
-                        getIsReadData().postValue(true);
                         try {
                             codes= wrCodesTxt.readTextFromUri(result.getData().getData(), context);
+                            List<Code> listCodes = fromListStrigToListCodes();
+                            write(context, listCodes);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -110,9 +111,8 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         //permission granted
                     }
                 });
-
-
     }
+
 
     public void requestRole() {
         String[] permissions = new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE, Manifest.permission.MODIFY_PHONE_STATE};
