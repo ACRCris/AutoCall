@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver, ReadDatabase {
+public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleObserver, ReadDatabase, WriteDatabase<List<Code>> {
 
     private MutableLiveData<Boolean> mIsRoleGranted;
     private MutableLiveData<Boolean> isReadData;
@@ -192,6 +192,21 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
             listString.add(code.getId()+"*"+code.getCiudad()+"*"+code.getCode());
         }
         return listString;
+    }
+    @Override
+    public void write(Context context, List<Code> codes) {
+        Runnable runnable = () -> {
+            AppDatabase db = DatabaseHelper.getDB(context);
+
+            CodeDao doctorDao = db.codeDao();
+            doctorDao.insertAll(codes);
+            read(context);
+
+        };
+
+        new Thread(runnable).start();
+
+
     }
 
     public List<Code> getCodesList() {
