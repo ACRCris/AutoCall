@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.IntentFilter;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,7 +44,7 @@ public class CallerScreenFragment extends Fragment {
 
     private FragmentCallerScreenBinding binding;
     private CallScreenViewModel mRequest;
-
+    private MediaPlayer mediaPlayer;
     private String ciudadActual = "";
     int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -51,10 +52,13 @@ public class CallerScreenFragment extends Fragment {
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+    private boolean inicial =false;
+
     @SuppressLint("MissingPermission")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mediaPlayer = MediaPlayer.create(requireActivity(), R.raw.tono);
 
 
         Activity activity = requireActivity();
@@ -110,20 +114,19 @@ public class CallerScreenFragment extends Fragment {
                     if(ciudadActual.equals(mRequest.ciudad())) {
                         mRequest.sendUSSDCode();
                     }
-                    else {
+                    else if (!inicial){
                         List<String> numbers = mRequest.getNumbers();
                         if(mRequest.ussdCode() != null)
-                            numbers.set(0,mRequest.ussdCode());
+                            numbers.add(0, mRequest.ussdCode());
                         List<Code> codes = mRequest.getCodes();
-                        /*if(codes.size() > 0) {
+                        if(codes.size() > 0) {
                             codes.remove(codes.size() - 1);
                             //mRequest.setCodes(codes);
                         }
-                         */
-
                         mRequest.setNumbers(numbers);
                         showAlertDialogSim2();
-                    }
+                    }else
+                        inicial = false;
                 }
             }else {
                 mRequest.update(requireActivity(), mRequest.getCodes());
@@ -135,12 +138,16 @@ public class CallerScreenFragment extends Fragment {
 
 
         button.setOnClickListener(view1 -> {
-            if(ciudadActual.equals(mRequest.ciudad())){
+            if(mRequest.getNumbers().size()>0){
+                if(ciudadActual.equals(mRequest.ciudad())){
 
-                mRequest.getMakeCall().setValue(true);
+                    mRequest.getMakeCall().setValue(true);
+                }
+                else {
+                    showAlertDialogSim();
+                    inicial = true;
+                }
             }
-            else
-                showAlertDialogSim();
         });
 
         final Observer<Boolean> exportObserver = exportCall -> {
@@ -170,6 +177,7 @@ public class CallerScreenFragment extends Fragment {
     public void showAlertDialogSim() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Colocar SIM");
+        mediaPlayer.start();
         builder.setMessage("Pofavor colocar la SIM " + mRequest.ciudad());
         builder.setPositiveButton("OK", (dialog, which) -> {
             mRequest.getMakeCall().setValue(true);
@@ -180,6 +188,7 @@ public class CallerScreenFragment extends Fragment {
     }
 
     public void showAlertDialogSim2() {
+        mediaPlayer.start();
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Colocar SIM");
         builder.setMessage("Pofavor colocar la SIM " + mRequest.ciudad());

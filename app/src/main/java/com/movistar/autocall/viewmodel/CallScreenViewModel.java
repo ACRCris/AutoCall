@@ -6,6 +6,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -87,6 +88,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
     public CallScreenViewModel(@NotNull ActivityResultRegistry mRegistry, Context context) {
         this.mRegistry = mRegistry;
         this.context = context;
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -211,7 +213,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                         public void responseMessage(String message) {
                                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                                             ussdApi.cancel();
-                                            Code code = new Code(id,data[2]+dataToSend,message, ciudad);
+                                            Code code = new Code(id,data[2]+"*"+dataToSend + "#",message, ciudad);
                                             codes.add(code);
                                             numbers.remove(0);
                                             if (!numbers.isEmpty()) {
@@ -224,7 +226,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         }else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
-                            Code code = new Code(id,data[2]+dataToSend,message, ciudad);
+                            Code code = new Code(id,data[2]+"*"+dataToSend + "#",message, ciudad);
                             codes.add(code);
                             numbers.remove(0);
                             if (!numbers.isEmpty()) {
@@ -242,7 +244,7 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                 Log.i("RepuestaALA2", "responseMessage: "+ " " + message + " " + dataToSend);
 
                 if(!message.contains("Check your accessibility") && !numbers.isEmpty()) {
-                    Code code = new Code(id, data[2]+dataToSend,message,ciudad);
+                    Code code = new Code(id, data[2]+"*"+dataToSend + "#",message,ciudad);
                     codes.add(code);
                     numbers.remove(0);
                     if (!numbers.isEmpty()) {
