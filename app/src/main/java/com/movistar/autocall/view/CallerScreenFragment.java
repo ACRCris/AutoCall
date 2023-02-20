@@ -68,7 +68,7 @@ public class CallerScreenFragment extends Fragment {
 
         mRequest = new CallScreenViewModel(requireActivity().getActivityResultRegistry(), requireContext());
         getLifecycle().addObserver(mRequest);
-        mRequest.instanceCall(requireActivity());
+        //mRequest.instanceCall(requireActivity());
         mRequest.intiRequest(requireActivity());
         List<String> codes = requireArguments().getStringArrayList("codes");
         mRequest.setCiudad(codes.get(0).split("\\*")[1]);

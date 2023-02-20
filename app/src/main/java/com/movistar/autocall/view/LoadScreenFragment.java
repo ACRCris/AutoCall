@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.movistar.autocall.viewmodel.LoadScreenViewModel;
 import com.movistar.autocall.R;
@@ -84,14 +85,25 @@ public class LoadScreenFragment extends Fragment {
             }
         };
 
+        final  Observer<Boolean> isWriteDataObserver = isReadData -> {
+            if (isReadData) {
+                //Toast.makeText(requireContext(), "Escritura-database exitosa", Toast.LENGTH_SHORT).show();
+
+                mRequest.read(requireActivity());
+            }
+        };
+
         final Observer<Boolean> isReadDataObserver = isReadData -> {
             if (isReadData) {
+                //Toast.makeText(requireContext(), "Lectura-database exitosa", Toast.LENGTH_SHORT).show();
+
                 mRequest.requestRole();
             }
         };
 
         mRequest.getIsRoleGranted().observe(getViewLifecycleOwner(), isGrantedObserver);
         mRequest.getIsReadData().observe(getViewLifecycleOwner(), isReadDataObserver);
+        mRequest.getIsWriteData().observe(getViewLifecycleOwner(), isWriteDataObserver);
 
         // Inflate the layout for this fragment*/
         binding = FragmentLoadScreenBinding.inflate(inflater, container, false);

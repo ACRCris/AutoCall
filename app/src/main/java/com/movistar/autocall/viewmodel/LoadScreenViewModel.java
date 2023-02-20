@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultRegistry;
@@ -36,6 +37,8 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     private MutableLiveData<Boolean> mIsRoleGranted;
     private MutableLiveData<Boolean> isReadData;
+
+    private MutableLiveData<Boolean> isWriteData;
     private Uri uriToLoad;
     private List<String> codes;
 
@@ -60,6 +63,13 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
             isReadData = new MutableLiveData<>();
         }
         return isReadData;
+    }
+
+    public MutableLiveData<Boolean> getIsWriteData() {
+        if (isWriteData == null) {
+            isWriteData = new MutableLiveData<>();
+        }
+        return isWriteData;
     }
 
 
@@ -90,10 +100,12 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
                         //getMetaTxt(result.getData().getData(), context);
                         WRCodesTxt wrCodesTxt = new WRCodesTxt();
                         try {
+                            //Toast.makeText(context, "Lectura exitosa txt", Toast.LENGTH_SHORT).show();
                             codes= wrCodesTxt.readTextFromUri(result.getData().getData(), context);
                             List<Code> listCodes = fromListStrigToListCodes();
                             write(context, listCodes);
                         } catch (IOException e) {
+                            //Toast.makeText(context, "Lectura fallida txt", Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     } else {
@@ -200,7 +212,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
             CodeDao doctorDao = db.codeDao();
             doctorDao.insertAll(codes);
-            read(context);
+            getIsWriteData().postValue(true);
 
         };
 
