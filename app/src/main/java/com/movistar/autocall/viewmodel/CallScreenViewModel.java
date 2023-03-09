@@ -223,7 +223,35 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
                                             }
                                         }
                                     });
-                        }else{
+                        }else if(message.contains("Eleccion no disponible")){
+                            ussdApi.send(
+                                "00",
+                                new USSDController.CallbackMessage() {
+                                    @Override
+                                    public void responseMessage(String message) {
+                                        Log.i("RepuestaALA", "Eleccion_no_disponible: "+message + " " + dataToSend);
+                                        ussdApi.send(
+                                                dataToSend,
+                                                new USSDController.CallbackMessage() {
+                                                    @Override
+                                                    public void responseMessage(String message) {
+                                                        Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
+                                                        ussdApi.cancel();
+                                                        Code code = new Code(id,data[2]+"*"+dataToSend + "#",message, ciudad);
+                                                        codes.add(code);
+                                                        numbers.remove(0);
+                                                        if (!numbers.isEmpty()) {
+                                                            getMakeCall().postValue(true);
+                                                        } else  {
+                                                            getMakeCall().postValue(false);
+                                                        }
+                                                    }
+                                                });
+                                    }
+
+                                });
+                        }
+                        else{
                             Log.i("RepuestaALA", "responseMessage: "+message + " " + dataToSend);
                             ussdApi.cancel();
                             Code code = new Code(id,data[2]+"*"+dataToSend + "#",message, ciudad);
@@ -327,8 +355,8 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
         data[3]  = numbers.get(0).replace(data[0]+"*"+data[1]+"*"+data[2]+"*", "").replace("#","");
 
 
-        Log.i("RepuestaALA", "responseMessage: "+data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4]);
-        Log.i("RepuestaALA", "responseMessage:"+ numbers.get(0));
+        Log.i("RepuestaALA3", "responseMessage: "+data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4]);
+        Log.i("RepuestaALA3", "responseMessage:"+ numbers.get(0));
         return data;
     }
     @Override
