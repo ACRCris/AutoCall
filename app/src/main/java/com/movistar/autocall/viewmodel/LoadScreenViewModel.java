@@ -42,7 +42,7 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
     private Uri uriToLoad;
     private List<String> codes;
 
-    private List<Code> codesList = new ArrayList<>();
+    private final List<Code> codesList = new ArrayList<>();
     private final ActivityResultRegistry mRegistry;
     private ActivityResultLauncher<Intent> open_txt;
     private ActivityResultLauncher<Intent> openDirectory;
@@ -167,10 +167,13 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     @Override
     public void read(Context context) {
+
         Future<List<Code>> future = Executors.newSingleThreadExecutor().submit(() -> {
             synchronized (this) {
+
                 AppDatabase db = DatabaseHelper.getDB(context);
                 CodeDao doctorDao = db.codeDao();
+
                 return doctorDao.getCodesOrderByCiudad();
             }
         });
@@ -211,7 +214,9 @@ public class LoadScreenViewModel extends ViewModel implements DefaultLifecycleOb
             AppDatabase db = DatabaseHelper.getDB(context);
 
             CodeDao doctorDao = db.codeDao();
+            doctorDao.deleteAll();
             doctorDao.insertAll(codes);
+
             getIsWriteData().postValue(true);
 
         };

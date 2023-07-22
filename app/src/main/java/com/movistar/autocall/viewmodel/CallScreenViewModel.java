@@ -64,9 +64,9 @@ public class CallScreenViewModel extends ViewModel implements DefaultLifecycleOb
 
     private PhoneAccountHandle sim1;
     private String mmi;
-    private HashMap<String, HashSet<String>> map = new HashMap<>();
+    private final HashMap<String, HashSet<String>> map = new HashMap<>();
     private USSDApi ussdApi;
-    private Context context;
+    private final Context context;
     private String ussdCode;
     private int id;
 
